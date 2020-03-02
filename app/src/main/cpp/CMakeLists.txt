@@ -7,8 +7,8 @@ include_directories(${include_dir})
 add_library(cylib SHARED Cylib.cpp)
 
 #引用外部的so包
-add_library(libjpeg SHARED IMPORTED)
-set_target_properties(libjpeg PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/arm64-v8a/libjpeg.so)
+add_library(libjpeg STATIC IMPORTED)
+set_target_properties(libjpeg PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/arm64-v8a/libjpeg.a)
 
 #bitmap的包
 find_library(graphics jnigraphics)
