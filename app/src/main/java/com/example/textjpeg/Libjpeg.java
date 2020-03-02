@@ -10,12 +10,12 @@ public class Libjpeg {
         System.loadLibrary("cylib");
     }
 
-    public static void compressPic(Bitmap bitmap, int width, int high, int quality,
+    public static int compressPic(Bitmap bitmap, int width, int high, int quality,
                                    boolean optimize, String dst) {
-        File file = new File(dst);
-        file.mkdirs();
+//        File file = new File(dst);
+//        file.mkdir();
 
-        compress(bitmap, width, high, quality, optimize, dst);
+        return compress(bitmap, width, high, quality, optimize, dst);
     }
 
     /**

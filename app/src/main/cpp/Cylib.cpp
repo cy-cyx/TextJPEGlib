@@ -1,24 +1,69 @@
 #include <jni.h>
 #include <android/bitmap.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <malloc.h>
+#include <cstring>
 #include "include/jpeglib.h"
-#include "include/jconfig.h"
 
 typedef unsigned char byte;
 
-int generateJPEG(byte *data, int w, int h, int quality, const char *name, bool optimize) {
+int generateJPEG(byte *data, unsigned int w, unsigned int h, int quality, const char *name,
+                 bool optimize) {
+
+    int nComponent = 3; // 说明是三通道 RGB  如果是1 就是只有灰色通道
 
     struct jpeg_compress_struct jcs;
 
+    struct jpeg_error_mgr jem;
+    jcs.err = jpeg_std_error(&jem);
+
+    // 初始化
     jpeg_create_compress(&jcs);
+
+    FILE *f = fopen(name, "wb");
+    if (f == nullptr) {
+        return 0;
+    }
+
+    // 指定图像输出目标
+    jpeg_stdio_dest(&jcs, f);
+
+    jcs.image_width = w;
+    jcs.image_height = h;
+    jcs.optimize_coding = optimize;
+    jcs.input_components = nComponent;
+    jcs.in_color_space = JCS_RGB;
+
+    // 设置参数
+    jpeg_set_defaults(&jcs);
+    jpeg_set_quality(&jcs, quality, true); // 压缩的成都
+
+    // 开始压缩
+    jpeg_start_compress(&jcs, TRUE);
+
+    JSAMPROW row_pointer[1];
+    int row_stride;
+
+    row_stride = jcs.image_width * nComponent; // 算出一行多长
+
+    while (jcs.next_scanline < jcs.image_height) {
+        row_pointer[0] = &data[jcs.next_scanline * row_stride];
+
+        // 塞入数据
+        jpeg_write_scanlines(&jcs, row_pointer, 1);
+    }
+
+    // 完成和销毁
+    jpeg_finish_compress(&jcs);
+    jpeg_destroy_compress(&jcs);
+    fclose(f);
 
     return 0;
 }
 
 const char *jstringToString(JNIEnv *env, jstring jstr) {
     char *ret;
-    const char *tempStr = env->GetStringUTFChars(jstr, NULL);
+    const char *tempStr = env->GetStringUTFChars(jstr, nullptr);
     jsize len = env->GetStringUTFLength(jstr);
     if (len > 0) {
         ret = (char *) malloc(len + 1);
@@ -47,13 +92,16 @@ jint compressPic(JNIEnv *jniEnv, jclass object, jobject bitmap, jint width,
     }
 
     // argb rgb
-    uint32_t h, w;
+    uint32_t h;
+    uint32_t w;
     int32_t formet;
-    h = info.width;
-    w = info.height;
+    w = info.width;
+    h = info.height;
     formet = info.format;
     int color;
-    byte b, g, r;
+    byte b;
+    byte g;
+    byte r;
 
     byte *tempByte;
     byte *data = (byte *) malloc(h * w * 3);

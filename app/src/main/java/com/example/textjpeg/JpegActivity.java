@@ -7,6 +7,9 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -17,6 +20,11 @@ public class JpegActivity extends AppCompatActivity {
     private TextView textView;
     private String rsc = "";
     private TextView logView;
+    private CheckBox checkBox;
+    private SeekBar seekBar;
+
+    private boolean useOptimize = false;
+    private int quality = 50;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -24,6 +32,30 @@ public class JpegActivity extends AppCompatActivity {
         setContentView(R.layout.activity_jpeg);
         textView = findViewById(R.id.sample_text);
         logView = findViewById(R.id.log_text);
+        checkBox = findViewById(R.id.checkbox);
+        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                useOptimize = isChecked;
+            }
+        });
+        seekBar = findViewById(R.id.seekBar);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                quality = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
         Libjpeg.init();
     }
 
@@ -43,7 +75,8 @@ public class JpegActivity extends AppCompatActivity {
         Bitmap bitmap = BitmapFactory.decodeFile(rsc, options);
         String s = ImgFileUtils.getImgPath(this);
         showLog("输出路径" + s);
-        Libjpeg.compressPic(bitmap, bitmap.getWidth(), bitmap.getWidth(), 100, true, s);
+        int i = Libjpeg.compressPic(bitmap, bitmap.getWidth(), bitmap.getWidth(), quality, useOptimize, s);
+        showLog("结果" + i);
     }
 
     private void showLog(String s) {

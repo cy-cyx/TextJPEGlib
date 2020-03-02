@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.4.1)
 
 #头文件
 set(include_dir ${CMAKE_SOURCE_DIR}/include)
-include_directories(include_dir)
+include_directories(${include_dir})
 
 add_library(cylib SHARED Cylib.cpp)
 
